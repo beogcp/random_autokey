@@ -10,3 +10,7 @@ but instead replaced with a set of usable characters i.e. "!" becomes: ".Q." the
 reverses this atomaticaly.
 
 the program uses argparse and can be called in the terminal.
+It takes one positional argument that it uses to scramble the larger table. the table is scrambled using the
+default python random module so that it can be "seeded" with the keyword to ensure that you have the proper
+table when you encipher or decipher. Using a wrong initial key may still produce legible results The algorithm
+used cannot fix this.
