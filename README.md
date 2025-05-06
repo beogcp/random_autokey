@@ -8,3 +8,5 @@ different set of sixteen that becomes four characters from the larger table. the
 the key for the next group. deciphering reverses the proccess. some will not be stripped from the message,
 but instead replaced with a set of usable characters i.e. "!" becomes: ".Q." the deciphering function
 reverses this atomaticaly.
+
+the program uses argparse and can be called in the terminal.
