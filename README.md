@@ -6,7 +6,7 @@ total a 4 trit character. It places the letters of the message in a group of fou
 from the larger in to a sixteen trit number it then performs ternary addition on this group to obtain a
 different set of sixteen that becomes four characters from the larger table. the random figure becomes
 the key for the next group. deciphering reverses the proccess. some will not be stripped from the message,
-but instead replaced with a set of usable characters i.e. "!" becomes: ".Q." the deciphering function
+but instead replaced with a set of usable characters i.e. "!" becomes: ".E." the deciphering function
 reverses this atomaticaly.
 
 the program uses argparse and can be called in the terminal.
