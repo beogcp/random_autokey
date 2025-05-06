@@ -1,0 +1,157 @@
+#!/bin/python3
+from random import seed, shuffle
+from secrets import choice
+import argparse
+
+description = "A program for encipher/deciphering message"
+parser = argparse.ArgumentParser(description=description)
+parser.add_argument("keyword", help="the keyword that scrambles the alphabet")
+parser.add_argument("-k", "--key", type=str, help="a single letter key")
+parser.add_argument("-I", "--infile", help="the file to read the message from")
+parser.add_argument("-O", "--outfile", help="the file to write to")
+parser.add_argument("-E", "--encipher", help="encipher the message",
+									action="store_true")
+parser.add_argument("-D", "--decipher", help="decipher the message",
+									action="store_true")
+parser.add_argument("-v", "--verbose", help="print the output",
+									action="store_true")
+
+def Ternary(num):
+    nm = []
+    while num > 0:
+        nm.insert(0, str(num % 3))
+        num //= 3
+    return ''.join(nm)
+
+def TernaryToDecimal(num):
+    num = str(num)
+    sm = 0
+    for x in range(1, len(num) + 1):
+        sm += 3 ** (x - 1) * int(num[-x])
+    return sm
+
+def tAdd(a, b):
+    return (a + b) % 3
+
+def tSub(a, b):
+    return (a - b) % 3
+
+SET0 = "ABCDEFGHIJKLMNOPQRSTUVWXYZ."
+SET1 = "abcdefghijklmnopqrstuvwxyz?"
+SET2 = "0123456789!@#$%^&*()[]{}:;,"
+SET = list(SET0 + SET1 + SET2)
+NUMS27 = [Ternary(x).rjust(3, '0') for x in range(27)]
+NUMS81 = [Ternary(x).rjust(4, '0') for x in range(81)]
+TABLE27 = dict([[SET0[x], NUMS27[x]] for x in range(27)])
+INVTABLE27 = dict([[NUMS27[x], SET0[x]] for x in range(27)])
+TABLE81 = dict([[SET[x], NUMS81[x]] for x in range(81)])
+INVTABLE81 = dict([[NUMS81[x], SET[x]] for x in range(81)])
+
+def scramble_table(keyword):
+    global TABLE81, INVTABLE81, SET
+    SET = list(SET)
+    seed(keyword)
+    shuffle(SET)
+    SET = ''.join(SET)
+    TABLE81 = dict([[SET[x], NUMS81[x]] for x in range(81)])
+    INVTABLE81 = dict([[NUMS81[x], SET[x]] for x in range(81)])
+
+def encipher_message(mssg, init_key):
+    if init_key not in SET:
+        return "invalid key, cannot encipher"
+    plaintext = []
+    replace = {"!": ".E.", "?": ".Q.", "_": ".U.", " ": ".S.", ",": ".C.",
+               "@": ".AT.", "&": ".AND.", ":": ".CLN.", ";": ".SMCLN.",
+               "\n": ".N.", "\t": ".T.", "'": ".A.", "1": ".ONE.",
+               "2": ".TW.", "3": ".TRE.", "4": ".FR.", "5": ".FV.",
+               "6": ".SX.", "7": ".SVN.", "8": ".EGHT.", "9": ".NNE.",
+               "0": ".O."}
+    mssg = mssg.upper()
+    for K in replace.keys():
+        mssg = mssg.replace(K, replace[K])
+    for L in mssg.upper():
+        if L in SET0:
+            plaintext.append(L)
+    while len(plaintext) % 4 != 0:
+        plaintext.append(choice(SET0))
+    key = list(TABLE81[init_key])
+    tstr = []
+    for grp in range(0, len(plaintext), 4):
+        tstr.append(plaintext[grp: grp + 4])
+    numstr = []
+    for grp in tstr:
+        quad = []
+        for L in grp:
+            quad.append(list(TABLE27[L]))
+        numstr.append(quad)
+    ciphertext = ""
+    for grp in numstr:
+        nkey = list(TABLE81[choice(SET)])
+        for K in range(4):
+            grp[K].append(nkey[K])
+        tstr = grp[0] + grp[1] + grp[2] + grp[3]
+        for L in range(16):
+            tstr[L] = str(tAdd(int(key[L % 4]), int(tstr[L])))
+        for L in range(0, 16, 4):
+            ciphertext += INVTABLE81[''.join(tstr[L: L + 4])]
+        key = nkey
+    return ciphertext
+
+def decipher_message(mssg, init_key):
+    mssg = list(mssg)
+    ciphergroups = []
+    for L in range(0, len(mssg), 4):
+        ciphergroups.append(mssg[L: L + 4])
+    key = list(TABLE81[init_key])
+    plaintext = ""
+    for Grp in ciphergroups:
+        group = []
+        nkey = []
+        for L in Grp:
+            group += list(TABLE81[L])
+        plntxt_grp = ""
+        for x in range(16):
+            group[x] = str(tSub(int(group[x]), int(key[x % 4])))
+            if (x + 1) % 4 == 0:
+                nkey.append(group[x])
+                plntxt_grp = ""
+            else:
+                plntxt_grp += str(group[x])
+                if len(plntxt_grp) % 3 == 0:
+                    plaintext += INVTABLE27[plntxt_grp]
+        key = nkey
+    replace = {".E.": "!", ".Q.": "?", ".S.": " ", ".U.": "_", ".C.": ",",
+               ".AT.": "@", ".AND.": "&", ".CLN.": ":", ".SMCLN.": ";",
+               ".N.": "\n", ".T.": "\t", ".A.": "'", ".ONE.": "1",
+               ".TW.": "2", ".TRE.": "3", ".FR.": "4", ".FV.": "5",
+               ".SX.": "6", ".SVN.": "7", ".EGHT.": "8", ".NNE.": "9",
+               ".O.": "0"}
+    for K in replace.keys():
+        plaintext = plaintext.replace(K, replace[K])
+    return plaintext.title()
+
+if __name__ == "__main__":
+    args = parser.parse_args()
+    if args.encipher and args.decipher:
+        print("cannot encipher and decipher. please pick one or the other")
+        exit()
+    if args.encipher:
+        mode = "E"
+    else:
+        mode = "D"
+    scramble_table(args.keyword)
+    infile = open(args.infile, 'rt')
+    mssg = infile.read()
+    infile.close()
+    if mode == "E":
+        outtext = encipher_message(mssg, args.key)
+    elif mode == "D":
+        outtext = decipher_message(mssg, args.key)
+    else:
+        outtext = ""
+    if args.verbose:
+        print(outtext)
+    if args.outfile is not None:
+        outfile = open(args.outfile, 'wt+')
+        outfile.write(outtext)
+        outfile.close()
