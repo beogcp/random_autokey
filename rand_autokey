@@ -3,19 +3,6 @@ from random import seed, shuffle
 from secrets import choice
 import argparse
 
-description = "A program for encipher/deciphering message"
-parser = argparse.ArgumentParser(description=description)
-parser.add_argument("keyword", help="the keyword that scrambles the alphabet")
-parser.add_argument("-k", "--key", type=str, help="a single letter key")
-parser.add_argument("-I", "--infile", help="the file to read the message from")
-parser.add_argument("-O", "--outfile", help="the file to write to")
-parser.add_argument("-E", "--encipher", help="encipher the message",
-									action="store_true")
-parser.add_argument("-D", "--decipher", help="decipher the message",
-									action="store_true")
-parser.add_argument("-v", "--verbose", help="print the output",
-									action="store_true")
-
 def Ternary(num):
     nm = []
     while num > 0:
@@ -130,7 +117,19 @@ def decipher_message(mssg, init_key):
         plaintext = plaintext.replace(K, replace[K])
     return plaintext.title()
 
-if __name__ == "__main__":
+def main():
+    description = "A program for encipher/deciphering message"
+    parser = argparse.ArgumentParser(description=description)
+    parser.add_argument("keyword", help="the keyword that scrambles the alphabet")
+    parser.add_argument("-k", "--key", type=str, help="a single letter key")
+    parser.add_argument("-I", "--infile", help="the file to read the message from")
+    parser.add_argument("-O", "--outfile", help="the file to write to")
+    parser.add_argument("-E", "--encipher", help="encipher the message",
+			action="store_true")
+    parser.add_argument("-D", "--decipher", help="decipher the message",
+			action="store_true")
+    parser.add_argument("-v", "--verbose", help="print the output",
+			action="store_true")
     args = parser.parse_args()
     if args.encipher and args.decipher:
         print("cannot encipher and decipher. please pick one or the other")
@@ -155,3 +154,6 @@ if __name__ == "__main__":
         outfile = open(args.outfile, 'wt+')
         outfile.write(outtext)
         outfile.close()
+
+if __name__ == "__main__":
+    main()
