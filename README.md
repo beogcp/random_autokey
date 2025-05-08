@@ -7,7 +7,7 @@ from the larger in to a sixteen trit number it then performs ternary addition on
 different set of sixteen that becomes four characters from the larger table. the random figure becomes
 the key for the next group. deciphering reverses the proccess. some will not be stripped from the message,
 but instead replaced with a set of usable characters i.e. "!" becomes: ".E." the deciphering function
-reverses this atomaticaly.
+reverses this automaticaly.
 
 the program uses argparse and can be called in the terminal.
 It takes one positional argument that it uses to scramble the larger table. the table is scrambled using the
